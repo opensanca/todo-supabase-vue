@@ -6,7 +6,14 @@
 
   Uma ferramenta de TO-DO com autenticação, permitindo listar tarefas, adicionar nova tarefa, alterar o texto de uma tarefa existente e concluir tarefas. O frontend será desenvolvido usando Vue2. O backend (tanto autenticação quanto armazenamento da lista de tarefas) será feito usando Supabase.
 
-  *Inserir imagem de mockup da lista de tarefas*
+  https://opensanca.github.io/todo-supabase-vue/
+
+* Como acompanhar? Faça o clone do repositório do workshop usando Git: https://github.com/opensanca/todo-supabase-vue. Vá para a branch `handson` e siga as instruções. De tempos em tempos essa branch vai ser atualizada e as pessoas que não conseguiram acompanhar podem pegar do último código que funciona com os seguintes comandos:
+
+```sh
+git fetch
+git reset --hard origin/handson
+```
 
 * Criação de conta no Supabase e configurações necessárias para desenvolvimento local:
 
@@ -24,7 +31,7 @@
   - Garanta que possui o npm disponível: `npm`;
   - Instale o Vue CLI: `npm install -g @vue/cli`;
   - Crie a base do projeto: `vue create todo1`;
-  - Abra a pasta no editor de sua escolha (caso não tenha preferência use o VS Code);
+  - Abra a pasta no editor de sua escolha (caso não tenha preferência use o VS Code com a extensão Vetur);
   - Navegue pelos arquivos que foram criados (principalmente o main.js);
   - Abra o arquivo `App.vue` e analise o conteúdo;
   - Rode usando `npm run serve`;
@@ -92,6 +99,8 @@ new Vue({
 div {
 ```
 
+(COMMIT & PUSH)
+
   - Apague o componente hello world, retire tudo do `App` e vamos adicionar roteamento:
 
 ```vue
@@ -139,9 +148,9 @@ vue add router
     Tarefa 4
   </li>
 </ul>
-</div>
 ```
 
+  - Está muito feito! Limpe os estilos do App;
   - Para deixar mais bonito instale papercss e importe no projeto (criando também um arquivo estilos.css extra):
 
 ```
@@ -624,6 +633,9 @@ async salvarAlteracaoDeTitulo() {
 
 * (bônus) Deploy usando GitHub Pages e Actions:
 
-  CUIDADO com SITE URL na configuração do Supabase.
-  CUIDADO com o history mode do router.
-  [...]
+  - Habilitar o github pages no repositório
+  - npm run build
+  - git checkout -b gh-pages
+  - cp -R dist/* .
+  - git commit
+  - git push
