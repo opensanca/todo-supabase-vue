@@ -142,6 +142,43 @@ vue add router
 </div>
 ```
 
+  - Para deixar mais bonito instale papercss e importe no projeto (criando também um arquivo estilos.css extra):
+
+```
+npm install papercss
+```
+
+```js
+import 'papercss/dist/paper.min.css';
+import './estilos.css';
+```
+
+```css
+body {
+  overflow-y: scroll;
+  text-align: center;
+}
+
+a {
+  font-size: 2rem;
+  padding: 0 0.5rem;
+}
+
+h1,
+h2 {
+  margin: 0;
+  padding: 1rem;
+}
+
+button {
+  margin-left: 1rem;
+}
+
+input {
+  display: inline-block;
+}
+```
+
   - Mova a lista de tarefas para o "estado" do componente Home e use essa lista para renderizar as tarefas:
 
 ```vue
@@ -411,6 +448,7 @@ export default {
 ```vue
 <template>
   <div>
+    <h1>Registro</h1>
     <p>Email: <input v-model="email"></p>
     <p>Senha: <input type="password" v-model="senha"></p>
     <p>

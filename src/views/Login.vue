@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h1>Registro</h1>
     <p>Email: <input v-model="email"></p>
     <p>Senha: <input type="password" v-model="senha"></p>
     <p>
