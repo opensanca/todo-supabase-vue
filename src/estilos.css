@@ -1,0 +1,23 @@
+body {
+  overflow-y: scroll;
+  text-align: center;
+}
+
+a {
+  font-size: 2rem;
+  padding: 0 0.5rem;
+}
+
+h1,
+h2 {
+  margin: 0;
+  padding: 1rem;
+}
+
+button {
+  margin-left: 1rem;
+}
+
+input {
+  display:  inline-block;
+}

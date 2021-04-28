@@ -1,7 +1,7 @@
 <template>
   <li>
     <input v-model="tarefa.titulo" v-on:change="salvarAlteracaoDeTitulo()">
-    <button v-on:click="concluir()">X</button>
+    <button v-on:click="concluir()">✔</button>
   </li>
 </template>
 
