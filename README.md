@@ -509,24 +509,118 @@ export default {
 </script>
 ```
 
-  CUIDADO com a rota de integração com os links enviados por email. Precisa ajustar o link de 3000 para porta 8080.
-  [...]
+  - Voltando para o componente `Home` agora é possível integrar o cadastro de tarefa:
 
-* Integrando o cadastro de nova tarefa:
+```js
+async adicionarTarefa() {
+  // console.log(this.tarefas);
+  // const proxima = this.tarefas.length + 1;
+  // this.tarefas.push({
+  //   id: proxima,
+  //   titulo: this.titulo
+  // });
+  // this.titulo = '';
+  try {
+    const res = await supabase.from('tarefas').insert({
+      user_id: supabase.auth.user().id,
+      titulo: this.titulo
+    });
+    if (res.error) {
+      alert(res.error.message);
+    } else {
+      this.titulo = '';
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Não foi possível cadastrar a tarefa!');
+  }
+},
+```
 
-  [...]
+  - Com pelo menos uma tarefa cadastrada podemos integrar a consulta (e refresh depois do cadastro):
 
-* Integrando a alteração de tarefa existente:
+```js
+} else {
+  this.titulo = '';
+  this.carregarTarefas();
+}
+```
 
-  [...]
+```js
+,
+async carregarTarefas() {
+  this.tarefas = [];
+  try {
+    const res = await supabase.from('tarefas')
+      .select("id, titulo")
+      .filter("concluida", "eq", false);
+    if (res.error) {
+      alert(res.error.message);
+    } else {
+      this.tarefas = res.data;
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Não foi possível carregar as tarefas!');
+  }
+}
+```
 
-* Integrando a conclusão de tarefa pendente (botão "Concluir"):
+```js
+,
+mounted() {
+  this.carregarTarefas();
+}
+```
 
-  [...]
+  - De forma bem similar é possível concluir uma tarefa:
 
-* (bônus) Sign up (cadastro):
+```js
+async concluirTarefa(tarefa) {
+  // console.log(this.tarefas);
+  // const idx = this.tarefas.indexOf(tarefa);
+  // this.tarefas.splice(idx, 1);
+  // this.tarefas = this.tarefas.filter(x => x !== tarefa);
+  try {
+    const res = await supabase.from('tarefas')
+      .update({ concluida: true })
+      .eq("id", tarefa.id);
+    if (res.error) {
+      alert(res.error.message);
+    } else {
+      this.carregarTarefas();
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Não foi possível concluir a tarefa!');
+  }
+},
+```
 
+  - E por fim registrar as alterações de título:
 
+```js
+async salvarAlteracaoDeTitulo() {
+  // console.log(this.tarefa.titulo);
+  // console.log(isLoggedIn());
+  // (async () => {
+  //   const res = await supabase.from('tarefas').select();
+  //   console.log(res);
+  // })();
+  try {
+    const tarefa = this.tarefa;
+    const res = await supabase.from('tarefas')
+      .update({ titulo: tarefa.titulo })
+      .eq("id", tarefa.id);
+    if (res.error) {
+      alert(res.error.message);
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Não foi possível concluir a tarefa!');
+  }
+},
+```
 
 * (bônus) Deploy usando GitHub Pages e Actions:
 
