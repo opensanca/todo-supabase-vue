@@ -15,25 +15,13 @@ const onLogin = async ({ email, password }) => {
   $loginForm.style.display = "none";
   $todos.style.display = "block";
 
-  $todoForm.addEventListener("submit", onCreateTodo);
-  $todoList.addEventListener("click", onTodoClick);
-  $todoList.addEventListener("change", onTodoChange);
+  $todoForm.addEventListener("submit", onTarefaCrie);
+  $todoList.addEventListener("click", onTarefaClick);
+  $todoList.addEventListener("change", onTarefaChange);
 
   userSession = user;
 
-  queryTodos: {
-    let { data: todos, error } = await supabase
-      .from("todos")
-      .select("*")
-      .order("inserted_at", { ascending: true });
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    renderizeTarefa(todos);
-  }
+  busqueTarefas();
 };
 
 const onSignUp = async ({ email, password }) => {

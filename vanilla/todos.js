@@ -1,8 +1,33 @@
-const onCreateTodo = async (e) => {
-  e.preventDefault();
+const renderizeTarefa = (tarefas) => {
+  tarefas.forEach((tarefa) => {
+    $todoList.innerHTML += `
+            <li data-id="${tarefa.id}">
+              <input type="text" name="tarefa" value="${tarefa.task}" />
+              <input type="checkbox" name="completa" ${
+                tarefa.is_complete ? 'checked="true"' : ""
+              } />
+              <button name="remove">x</button>
+            </li>
+          `;
+  });
+};
 
-  const tarefa = e.target.tarefa.value;
+const busqueTarefas = async () => {
+    let { data: todos, error } = await supabase
+      .from("todos")
+      .select("*")
+      .order("inserted_at", { ascending: true });
 
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    renderizeTarefa(todos);
+}
+
+const adicioneTarefa = async ({ tarefa }) => {
+  // Ignore input vazio
   if (tarefa) {
     const { data, error } = await supabase.from("todos").insert([
       {
@@ -21,66 +46,72 @@ const onCreateTodo = async (e) => {
   }
 };
 
-const onTodoChange = async (e) => {
-  console.log("todo change", e);
+const atualizeTarefa = async ({ id, task }) => {
+  const { error } = await supabase
+    .from("todos")
+    .update({ task })
+    .eq("id", id);
+
+  if (error) {
+    console.error(error);
+    toggleAlert(ALERT.ERROR_TAREFA_UPDATE);
+    return;
+  }
+};
+
+const completeTarefa = async ({ id, is_complete }) => {
+  const { error } = await supabase
+    .from("todos")
+    .update({ is_complete })
+    .eq("id", id);
+
+  if (error) {
+    console.error(error);
+    toggleAlert(ALERT.ERROR_TAREFA_UPDATE);
+    return;
+  }
+};
+
+const removaTarefa = async ({ id, item }) => {
+  const { error } = await supabase.from("todos").delete().eq("id", id);
+
+  if (error) {
+    console.error(error);
+    toggleAlert(ALERT.ERROR_TAREFA_DELETE);
+    return;
+  }
+
+  item.remove();
+};
+
+const onTarefaCrie = async (e) => {
+  e.preventDefault();
+
+  const tarefa = e.target.tarefa.value;
+  adicioneTarefa({ tarefa });
+};
+
+// Se utilize de event propagation para inserir somente um listener para changes
+const onTarefaChange = async (e) => {
   let item = e.target.closest("li");
   let id = item.dataset.id;
 
   if (e.target.type === "text") {
-    // update task
-    const { data, error } = await supabase
-      .from("todos")
-      .update({ task: e.target.value })
-      .eq("id", id);
-
-    if (error) {
-      console.error(error);
-      toggleAlert(ALERT.ERROR_TAREFA_UPDATE);
-      return;
-    }
+    // caso seja o input de texto
+    atualizeTarefa({ id, task: e.target.value });
   } else if (e.target.type === "checkbox") {
-    // complete task
-    const { data, error } = await supabase
-      .from("todos")
-      .update({ is_complete: e.target.checked })
-      .eq("id", id);
-
-    if (error) {
-      console.error(error);
-      toggleAlert(ALERT.ERROR_TAREFA_UPDATE);
-      return;
-    }
+    // caso seja o input checkbox
+    completeTarefa({ id, is_complete: e.target.checked });
   }
 };
-const onTodoClick = async (e) => {
-  console.log("todo click", e);
+
+// Se utilize de event propagation para inserir somente um listener para clicks
+const onTarefaClick = async (e) => {
   let item = e.target.closest("li");
   let id = item.dataset.id;
 
   if (e.target.nodeName === "BUTTON") {
-    // delete task
-    const { data, error } = await supabase.from("todos").delete().eq("id", id);
-
-    if (error) {
-      console.error(error);
-      toggleAlert(ALERT.ERROR_TAREFA_DELETE);
-      return;
-    }
-
-    item.remove();
+    // caso seja o botao de deletar
+    removaTarefa({ id, item });
   }
-};
-
-const renderizeTarefa = (tarefas) => {
-  tarefas.forEach((tarefa) => {
-    $todoList.innerHTML += `
-            <li data-id="${tarefa.id}">
-              <input type="text" name="tarefa" value="${tarefa.task}" />
-              <input type="checkbox" name="completa" ${
-                tarefa.is_complete ? 'checked="true"' : ""
-              } />
-              <button name="remove">x</button>
-            </li>
-          `;
-  });
 };
