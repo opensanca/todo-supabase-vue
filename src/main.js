@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-// import './estilos.css';
+import 'papercss/dist/paper.min.css';
+import './estilos.css';
 
 Vue.config.productionTip = false
 
