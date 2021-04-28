@@ -3,10 +3,7 @@ const renderizeTarefa = (tarefas) => {
     $todoList.innerHTML += `
             <li data-id="${tarefa.id}">
               <input type="text" name="tarefa" value="${tarefa.task}" />
-              <input type="checkbox" name="completa" ${
-                tarefa.is_complete ? 'checked="true"' : ""
-              } />
-              <button name="remove">x</button>
+              <button name="remove">✔</button>
             </li>
           `;
   });

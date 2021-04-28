@@ -1,22 +1,70 @@
 <html>
   <head>
     <title>Vanilla js + supabase</title>
+    <link rel="stylesheet" type="text/css"  href="./paper.min.css" />
     <style>
-      #todos,
       #alerts > h2 {
         display: none;
+        margin: 0;
+        font-size: 1.5rem;
+      }
+
+      #alerts {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+      }
+
+      #todos {
+        display: none;
+      }
+
+      #todos > h2 {
+        padding: 0 0 1rem;
+        margin: 0;
+      }
+
+      #todo-list li {
+        margin: 0.5rem 0;
+      }
+
+      #todo-list button {
+        margin-left: 1rem;
+      }
+
+      body {
+        overflow-y: scroll;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        margin: 0;
+        padding: 1rem;
+      }
+
+      input {
+        display: inline-block;
+      }
+
+      #reg {
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
       }
     </style>
   </head>
   <body>
-    <h1>Your TODO</h1>
+    <h1>OPENSANCA: TODO</h1>
     <div id="alerts">
-      <h2 id="alert-signup">Registrado com sucesso</h2>
-      <h2 id="alert-login">Logado com sucesso</h2>
-      <h2 id="alert-error-email">Houve um erro, você confirmou seu email?</h2>
-      <h2 id="alert-error-tarefa">Houve um erro com sua tarefa</h2>
-      <h2 id="alert-error-tarefa-update">Houve um erro ao atualizer sua tarefa</h2>
-      <h2 id="alert-error-tarefa-delete">Houve um erro ao remover sua tarefa</h2>
+      <h2 class="alert alert-success" id="alert-signup">Registrado com sucesso</h2>
+      <h2 class="alert alert-success" id="alert-login">Logado com sucesso</h2>
+      <h2 class="alert alert-danger"id="alert-error-email">Houve um erro, você confirmou seu email?</h2>
+      <h2 class="alert alert-danger"id="alert-error-tarefa">Houve um erro com sua tarefa</h2>
+      <h2 class="alert alert-danger"id="alert-error-tarefa-update">Houve um erro ao atualizer sua tarefa</h2>
+      <h2 class="alert alert-danger"id="alert-error-tarefa-delete">Houve um erro ao remover sua tarefa</h2>
     </div>
     <div id="login">
       <form id="login-form">
@@ -28,13 +76,18 @@
           Senha:
           <input type="password" name="password" />
         </label>
-        <label>
-          Registrar:
-          <input type="checkbox" name="signup" />
-        </label>
-        <button type="submit">Entrar</button>
+        <div id="reg">
+          <fieldset class="form-group">
+            <label for="signup" class="paper-check">
+              <input type="checkbox" name="signup" id="signup" value="signup"> 
+              <span>Registrar</span>
+            </label>
+            <button type="submit">Entrar</button>
+          </fieldset>
+        </div>
       </form>
     </div>
+
     <div id="todos">
       <h2>TODOS</h2>
       <form id="todo-form">
