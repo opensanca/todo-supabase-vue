@@ -1,0 +1,130 @@
+<html>
+  <head>
+    <title>Vanilla js + supabase</title>
+    <style>
+      #todos,
+      #alerts > h2 {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Your TODO</h1>
+    <div id="alerts">
+      <h2 id="alert-signup">Registrado com sucesso</h2>
+      <h2 id="alert-login">Logado com sucesso</h2>
+      <h2 id="alert-error-email">Houve um erro, você confirmou seu email?</h2>
+    </div>
+    <div id="login">
+      <form id="login-form">
+        <label>
+          Email:
+          <input type="text" name="email" />
+        </label>
+        <label>
+          Senha:
+          <input type="password" name="password" />
+        </label>
+        <label>
+          Registrar:
+          <input type="checkbox" name="signup" />
+        </label>
+        <button type="submit">Vai</button>
+      </form>
+    </div>
+    <div id="todos">
+      <h2>TODOS</h2>
+      <form id="todo-form">
+        <label>
+          Tarefa:
+          <input type="text" name="email" />
+        </label>
+        <button type="submit">Registrar</button>
+      </form>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <script>
+      // IMPORTS
+      const { createClient } = supabase;
+
+      // CONSTS
+      const ALERT = {
+        SIGNUP: 0,
+        LOGIN: 1,
+        ERROR_EMAIL: 2,
+        TIMEOUT: 2000
+      }
+
+      // SUPABASE
+      const SUPABASE_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYxOTYyNTM3NCwiZXhwIjoxOTM1MjAxMzc0fQ.t8S4NG11PShRKWXlce79u9wdI-Z7XjTrGZiEevyiXyw";
+      const SUPABASE_URL = "https://vizznmgnqrvrjpnotjuw.supabase.co";
+
+      supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      // ELEMENTS QUERIES
+      const $alerts = document.querySelectorAll("h2", "#alerts");
+      const $login = document.getElementById("login");
+      const $loginForm = document.getElementById("login-form");
+      const $todos = document.getElementById("todos");
+
+      const toggleAlert = (alert) => {
+          $alerts[alert].style.display = "block";
+          setTimeout(() => {
+            $alerts[alert].style.display = "none";
+          }, ALERT.TIMEOUT);
+      }
+
+      // CALLBACKS / LISTENERS
+      const onLogin = async ({email, password}) => {
+          let { user, error } = await supabase.auth.signIn({
+            email,
+            password,
+          });
+
+          if (error) {
+            toggleAlert(ALERT.ERROR_EMAIL);
+            return;
+          } else {
+            toggleAlert(ALERT.LOGIN);
+            $loginForm.style.display = "none";
+            $todos.style.display = "block";
+          }
+      }
+
+      const onSignUp = async ({email, password}) => {
+          let { user, error } = await supabase.auth.signUp({
+            email,
+            password,
+          });
+
+          if ( error) {
+            toggleAlert(ALERT.ERROR_EMAIL);
+            return;
+          } else {
+            toggleAlert(ALERT.SIGNUP);
+            $loginForm.style.display = "none";
+            $todos.style.display = "block";
+          }
+      }
+
+      const onLoginSubmit = async (e) => {
+        e.preventDefault();
+
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        const signUp = e.target.signup.checked;
+
+        if (e.target.signup.checked) {
+          onSignUp({email, password});
+        } else {
+          onLogin({email, password});
+        }
+      };
+
+      // ADDING CALLBACKS / LISTENERS
+      $loginForm.addEventListener("submit", onLoginSubmit);
+    </script>
+  </body>
+</html>
