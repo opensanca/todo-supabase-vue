@@ -14,6 +14,9 @@
       <h2 id="alert-signup">Registrado com sucesso</h2>
       <h2 id="alert-login">Logado com sucesso</h2>
       <h2 id="alert-error-email">Houve um erro, você confirmou seu email?</h2>
+      <h2 id="alert-error-tarefa">Houve um erro com sua tarefa</h2>
+      <h2 id="alert-error-tarefa-update">Houve um erro ao atualizer sua tarefa</h2>
+      <h2 id="alert-error-tarefa-delete">Houve um erro ao remover sua tarefa</h2>
     </div>
     <div id="login">
       <form id="login-form">
@@ -37,10 +40,12 @@
       <form id="todo-form">
         <label>
           Tarefa:
-          <input type="text" name="email" />
+          <input type="text" name="tarefa" />
         </label>
         <button type="submit">Registrar</button>
       </form>
+      <ul id="todo-list">
+      </li>
     </div>
 
     <script src="https://unpkg.com/@supabase/supabase-js"></script>
@@ -53,8 +58,13 @@
         SIGNUP: 0,
         LOGIN: 1,
         ERROR_EMAIL: 2,
-        TIMEOUT: 2000
-      }
+        ERROR_TAREFA: 3,
+        ERROR_TAREFA_UPDATE: 4,
+        ERROR_TAREFA_DELETE: 5,
+        TIMEOUT: 2000,
+      };
+
+      let userSession;
 
       // SUPABASE
       const SUPABASE_KEY =
@@ -68,46 +78,69 @@
       const $login = document.getElementById("login");
       const $loginForm = document.getElementById("login-form");
       const $todos = document.getElementById("todos");
+      const $todoForm = document.getElementById("todo-form");
+      const $todoList = document.getElementById("todo-list");
 
       const toggleAlert = (alert) => {
-          $alerts[alert].style.display = "block";
-          setTimeout(() => {
-            $alerts[alert].style.display = "none";
-          }, ALERT.TIMEOUT);
-      }
+        $alerts[alert].style.display = "block";
+        setTimeout(() => {
+          $alerts[alert].style.display = "none";
+        }, ALERT.TIMEOUT);
+      };
 
       // CALLBACKS / LISTENERS
-      const onLogin = async ({email, password}) => {
-          let { user, error } = await supabase.auth.signIn({
-            email,
-            password,
-          });
+      const onLogin = async ({ email, password }) => {
+        let { user, error } = await supabase.auth.signIn({
+          email,
+          password,
+        });
 
-          if (error) {
-            toggleAlert(ALERT.ERROR_EMAIL);
-            return;
-          } else {
-            toggleAlert(ALERT.LOGIN);
-            $loginForm.style.display = "none";
-            $todos.style.display = "block";
-          }
-      }
+        if (error) {
+          toggleAlert(ALERT.ERROR_EMAIL);
+          return;
+        }
 
-      const onSignUp = async ({email, password}) => {
-          let { user, error } = await supabase.auth.signUp({
-            email,
-            password,
-          });
+        toggleAlert(ALERT.LOGIN);
+        $loginForm.style.display = "none";
+        $todos.style.display = "block";
 
-          if ( error) {
-            toggleAlert(ALERT.ERROR_EMAIL);
-            return;
-          } else {
-            toggleAlert(ALERT.SIGNUP);
-            $loginForm.style.display = "none";
-            $todos.style.display = "block";
-          }
-      }
+
+        $todoForm.addEventListener("submit", onCreateTodo);
+        $todoList.addEventListener("click", onTodoClick);
+        $todoList.addEventListener("change", onTodoChange);
+
+        userSession = user;
+
+        queryTodos: {
+          let { data: todos, error } = await supabase.from("todos").select("*")
+             .order('inserted_at', { ascending: true});
+
+          renderizeTarefa(todos);
+        }
+      };
+
+      const onSignUp = async ({ email, password }) => {
+        let { user, error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+        if (error) {
+          toggleAlert(ALERT.ERROR_EMAIL);
+          return;
+        }
+
+        toggleAlert(ALERT.SIGNUP);
+        $loginForm.style.display = "none";
+        $todos.style.display = "block";
+
+        $todoForm.addEventListener("submit", onCreateTodo);
+        $todoList.addEventListener("click", onTodoClick);
+        $todoList.addEventListener("change", onTodoChange);
+
+        userSession = user;
+        console.log(userSession);
+      };
 
       const onLoginSubmit = async (e) => {
         e.preventDefault();
@@ -117,10 +150,99 @@
         const signUp = e.target.signup.checked;
 
         if (e.target.signup.checked) {
-          onSignUp({email, password});
+          onSignUp({ email, password });
         } else {
-          onLogin({email, password});
+          onLogin({ email, password });
         }
+      };
+
+      const onCreateTodo = async (e) => {
+        e.preventDefault();
+
+        const tarefa = e.target.tarefa.value;
+
+        if (tarefa) {
+          const { data, error } = await supabase.from("todos").insert([
+            {
+              user_id: userSession.id,
+              task: tarefa,
+            },
+          ]);
+
+          if (error) {
+            console.error(error);
+            toggleAlert(ALERT.ERROR_TAREFA);
+            return;
+          }
+
+          renderizeTarefa(data);
+        }
+      };
+
+      const onTodoChange= async (e) => {
+        console.log('todo change', e);
+        let item = e.target.closest('li');
+        let id = item.dataset.id;
+
+        if (e.target.type === 'text') {
+
+          const { data, error } = await supabase
+            .from('todos')
+            .update({ task: e.target.value })
+            .eq('id', id)
+
+          if (error) {
+            console.error(error);
+            toggleAlert(ALERT.ERROR_TAREFA_UPDATE);
+            return;
+          }
+        } else if (e.target.type === 'checkbox') {
+          // complete task
+          const { data, error } = await supabase
+            .from('todos')
+            .update({ is_complete: e.target.checked })
+            .eq('id', id)
+
+          if (error) {
+            console.error(error);
+            toggleAlert(ALERT.ERROR_TAREFA_UPDATE);
+            return;
+          }
+        }
+      }
+      const onTodoClick = async (e) => {
+        console.log('todo click', e);
+        let item = e.target.closest('li');
+        let id = item.dataset.id;
+
+        if (e.target.nodeName === 'BUTTON') {
+          // delete task
+          const { data, error } = await supabase
+            .from('todos')
+            .delete()
+            .eq('id', id)
+
+          if (error) {
+            console.error(error);
+            toggleAlert(ALERT.ERROR_TAREFA_DELETE);
+            return;
+          }
+
+          item.remove();
+        } 
+      }
+
+      const renderizeTarefa = (tarefas) => {
+        tarefas.forEach(tarefa => {
+          console.log(tarefa.is_complete, 'iscomplete');
+          $todoList.innerHTML += `
+            <li data-id="${tarefa.id}">
+              <input type="text" name="tarefa" value="${tarefa.task}" />
+              <input type="checkbox" name="completa" ${tarefa.is_complete ? 'checked="true"' : ''} />
+              <button name="remove">x</button>
+            </li>
+          `;
+        })
       };
 
       // ADDING CALLBACKS / LISTENERS
