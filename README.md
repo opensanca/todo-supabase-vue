@@ -312,6 +312,165 @@ export default {
 
 * Integrando com a autenticação do Supabase e busca da lista pessoal de tarefas:
 
+  - Volte no seu dashboard do Supabase, tudo deve estar disponível agora;
+  - Vá na parte de banco de dados e crie uma tabela chamada `tarefas` (defina uma primary key do tipo int8);
+  - Adicione uma coluna chamada `título` do tipo text e outra chamada `concluida` do tipo boolean. As duas obrigatórias e o default da `concluida` deve ser false;
+  - Crie uma coluna chamada `user_id` do tipo uuid referenciando a tabela `auth.users`. É essa coluna que vai garantir a segurança do sistema;
+
+```sql
+alter table tarefas add user_id uuid references auth.users not null;
+alter table tarefas enable row level security;
+
+create policy "Criar tarefa própria" on tarefas for
+    insert with check (auth.uid() = user_id);
+
+create policy "Visualizar suas tarefas" on tarefas for
+    select using (auth.uid() = user_id);
+
+create policy "Atualizar suas tarefas" on tarefas for
+    update using (auth.uid() = user_id);
+```
+
+  - Com a tabela criada é hora de instalar a biblioteca cliente do Supabase e autenticar o usuário:
+
+```sh
+npm install @supabase/supabase-js
+```
+
+  - Com a biblioteca instalada podemos escrever um módulo que configura uma instância do client (note que aqui precisamos da chave publicável, obtida dentro do dashboard do Supabase):
+
+```js
+import { createClient } from '@supabase/supabase-js';
+
+
+const supabase = createClient(
+  process.env.VUE_APP_SUPABASE_URL,
+  process.env.VUE_APP_SUPABASE_KEY
+);
+
+
+export default supabase;
+
+
+export function isLoggedIn() {
+  return supabase.auth.user() !== null;
+}
+```
+
+  - Essas variáveis de ambientes são interpoladas automaticamente do arquivo `.env` (detalhes aqui https://cli.vuejs.org/guide/mode-and-env.html#environment-variables)
+
+```
+VUE_APP_SUPABASE_URL=https://XXXXXXXX.supabase.co
+VUE_APP_SUPABASE_KEY=eyJhbGciOiJXXXXXXXXXXXXXXXx8sEtDI
+```
+
+  - Ainda no dashboard do Supabase troque a URL do site para `localhost:8080`. Desabilite também emails de confirmação;
+  - Esse método `isLoggedIn` pode ser usado num guard do roteamento:
+
+```js
+import { isLoggedIn } from '../supabase-client';
+
+router.beforeEach((to, from, next) => {
+  if (to.name !== 'Login' && !isLoggedIn()) next({ name: 'Login' })
+  else next()
+});
+```
+
+  - E criar uma view de login:
+
+```js
+},
+{
+  path: '/login',
+  name: 'Login',
+  component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue')
+}
+```
+
+```vue
+<template>
+  <div>
+    Login
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'Login',
+  data: () => {
+    return {};
+  },
+  methods: {},
+  components: {}
+}
+</script>
+```
+
+  - Implemente os elementos para login/registro. Note que no final da chamada signIn/signUp o isLoggedIn não vai mais retornar falso (completando a funcionalidade de autenticação):
+
+```vue
+<template>
+  <div>
+    <p>Email: <input v-model="email"></p>
+    <p>Senha: <input type="password" v-model="senha"></p>
+    <p>
+      <button v-on:click="cadastrar()">Cadastrar</button>
+      <button v-on:click="entrar()">Entrar</button>
+    </p>
+  </div>
+</template>
+
+<script>
+import supabase from '../supabase-client';
+import router from '../router';
+
+export default {
+  name: 'Login',
+  data: () => {
+    return {
+      email: '',
+      senha: ''
+    };
+  },
+  methods: {
+    async entrar() {
+      try {
+        const res = await supabase.auth.signIn({
+          email: this.email,
+          password: this.senha
+        });
+        if (res.error) {
+          alert(res.error.message);
+        } else {
+          router.push('/');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Não foi possível efetuar login!');
+      }
+    },
+    async cadastrar() {
+      try {
+        const res = await supabase.auth.signUp({
+          email: this.email,
+          password: this.senha
+        });
+        if (res.error) {
+          alert(res.error.message);
+        } else {
+          router.push('/');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Não foi possível efetuar o cadastro!');
+      }
+    }
+  },
+  components: {}
+}
+</script>
+```
+
   CUIDADO com a rota de integração com os links enviados por email. Precisa ajustar o link de 3000 para porta 8080.
   [...]
 
@@ -326,6 +485,10 @@ export default {
 * Integrando a conclusão de tarefa pendente (botão "Concluir"):
 
   [...]
+
+* (bônus) Sign up (cadastro):
+
+
 
 * (bônus) Deploy usando GitHub Pages e Actions:
 
