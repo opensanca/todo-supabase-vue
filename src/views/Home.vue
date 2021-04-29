@@ -54,10 +54,30 @@ export default {
         alert('Não foi possível cadastrar a tarefa!');
       }
     },
-    concluirTarefa(tarefa) {
+    async concluirTarefa(tarefa) {
       // const idx = this.tarefas.indexOf(tarefa);
       // this.tarefas.splice(idx, 1);
-      this.tarefas = this.tarefas.filter(x => x !== tarefa);
+      // this.tarefas = this.tarefas.filter(x => x !== tarefa);
+      try {
+
+        const res = await supabase.from('tarefas')
+          .update({
+            concluida: true
+          })
+          .eq('id', tarefa.id);
+
+        if (res.error) {
+          alert(res.error.message);
+        } else {
+          // DEU CERTO!
+          this.carregarTarefas();
+          // this.tarefas = this.tarefas.filter(x => x !== tarefa);
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert('Não foi possível concluir a tarefa!');
+      }
     },
     async carregarTarefas() {
       try {
