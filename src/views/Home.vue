@@ -15,6 +15,8 @@
 </template>
 
 <script>
+import supabase from '../supabase-client';
+
 export default {
   name: 'Home',
   data: () => {
@@ -28,12 +30,31 @@ export default {
     };
   },
   methods: {
-    adicionarTarefa() {
-      this.tarefas.push({
-        id: 4,
-        titulo: this.titulo
-      });
-      this.titulo = '';
+    async adicionarTarefa() {
+      // this.tarefas.push({
+      //   id: 4,
+      //   titulo: this.titulo
+      // });
+      // this.titulo = '';
+      try {
+
+        const res = await supabase.from('tarefas')
+          .insert({
+            user_id: supabase.auth.user().id,
+            titulo: this.titulo
+          });
+
+        if (res.error) {
+          alert(res.error.message);
+        } else {
+          // DEU CERTO!
+          this.titulo = '';
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert('Não foi possível cadastrar a tarefa!');
+      }
     },
     concluirTarefa(tarefa) {
       // const idx = this.tarefas.indexOf(tarefa);
