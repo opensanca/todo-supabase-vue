@@ -8,6 +8,7 @@
     <ul>
       <li v-for="tarefa in tarefas" :key="tarefa.id">
         {{tarefa.titulo}}
+        <button v-on:click="concluirTarefa(tarefa)">✔</button>
       </li>
     </ul>
   </div>
@@ -33,6 +34,11 @@ export default {
         titulo: this.titulo
       });
       this.titulo = '';
+    },
+    concluirTarefa(tarefa) {
+      // const idx = this.tarefas.indexOf(tarefa);
+      // this.tarefas.splice(idx, 1);
+      this.tarefas = this.tarefas.filter(x => x !== tarefa);
     }
   },
   components: {}
